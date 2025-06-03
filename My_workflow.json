@@ -1,0 +1,366 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f0a92a54-3f7e-4de1-914b-eeed416a5e94",
+      "name": "Telegram_entrada",
+      "webhookId": "af7185bc-4b33-4f79-9eed-43fbad02486c",
+      "credentials": {
+        "telegramApi": {
+          "id": "mdAOgsALM4FFxgrB",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram_entrada').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        0
+      ],
+      "id": "84b2c311-8572-4098-9def-d0958109c719",
+      "name": "Telegram_salida",
+      "webhookId": "5600d55d-2c69-47e9-b5cc-f848e1820688",
+      "credentials": {
+        "telegramApi": {
+          "id": "mdAOgsALM4FFxgrB",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=\n# Rol\nEres un asistente que recibe mensajes a través de la cuenta de telegram de los usuarios, según ello, calendarizarás una cita, la pondras en el calendario como un evento y lo guardaras, finalmente enviaras un mensaje por correo indicandole a esa persona la fecha y hora de su cita, ademas se enviara tambien correos si se reprograma o eliminan las citas indicando ese hecho.\n\n# Herramientas\n- Utiliza Telegram_entrada para recibir los mensajes de los usuarios .\n-Utiliza ia_gem_asistente para evaluar y escribir una respuesta.\n- Utiliza Google_crear para agendar una nueva cita.\n- Utiliza Google_modificar para reprogramar una cita ya agendada.\n- Utiliza Google_eliminar para eliminar una cita ya agendada.\n- Utiliza Google_consulta para consultar cuando alguien tiene una cita ya agendada.\n- Utiliza Telegram_salida para responderle al usuario correspondiente\n-Utiliza correo_gmail para enviar correos electronicos, segun se cree, reprograme o elimine una cita.\n\n\n# Objetivos\n- Recibir y registrar solicitudes de citas desde telegram.\n- Verificar la disponibilidad en el calendario.\n- Calendarizar citas.\n- Resolver dudas de los usuarios.\n- Modificar citas según sea necesario.\n- Confirmar las citas por correo electrónico.\n\n# Consideraciones\n-Es el año 2025.\n-Tu nombre es asistente_de_citas.\n- Debes mantener una conversación simple y amable para una comunicación efectiva.\n- Las citas tienen una duración de 1 hora por usuario sin excepciones.\n- Las citas solo se pueden agendar de lunes a viernes de 9 am a 5 pm, y los sábados de 9 am a 1 pm.\n-No se pueden agendar citas durante las horas de almuerzo esto es de 1pm a 2pm.\n-Las citas deben agendarse para fechas cercanas de no mas de 1 semana, en caso de que no haya disponibilidad se agendara en la fecha más cercana disponible.\n-No se pueden agendar varias citas a la misma hora.\n-El formato basico del correo electronico es el siguiente pero puede variar dependiendo si se reprograma o elimina este variaria:\nSaludos, estimado \"nombre del usuario\", se a programado su cita <Fecha y hora de la cita>, se le recomienda estar con 10 min de antelacion, Gracias."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "37fa2197-7704-43bf-8989-87605b271be1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Debes crear una cita según acuerdo con la persona con la que se hable, y guardarla en el calendario de Google, es el año 2025",
+        "calendar": {
+          "__rl": true,
+          "value": "correo.test.automata@gmail.com",
+          "mode": "list",
+          "cachedResultName": "correo.test.automata@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "useDefaultReminders": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Use_Default_Reminders', ``, 'boolean') }}",
+        "additionalFields": {
+          "description": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Description', ``, 'string') }}",
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        300,
+        240
+      ],
+      "id": "f4270913-691f-4b70-abf7-2a73ff5bb7c6",
+      "name": "Google_crear",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "fzQgp6jSDCaREmb0",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta cuando un usuario quiera cancelar o eliminar una cita.",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "correo.test.automata@gmail.com",
+          "mode": "list",
+          "cachedResultName": "correo.test.automata@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        580,
+        240
+      ],
+      "id": "3f0716a4-1ccd-46a5-981c-23eef3f656d9",
+      "name": "Google_eliminar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "fzQgp6jSDCaREmb0",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Usa esta herramienta para consultar cuando un usuario tiene una cita.",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "correo.test.automata@gmail.com",
+          "mode": "list",
+          "cachedResultName": "correo.test.automata@gmail.com"
+        },
+        "limit": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        240
+      ],
+      "id": "07e8001f-7978-45f1-9ac9-5628b2cdf601",
+      "name": "Google_consulta",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "fzQgp6jSDCaREmb0",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.text }}",
+        "contextWindowLength": 25
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        100,
+        240
+      ],
+      "id": "c71ff622-d7a1-4377-9715-d21ff7961442",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Debes utilizar esta herramienta cuando se quiera reprogramar una cita según acuerdo con la persona con la que se hable y disponibilidad del calendario",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "correo.test.automata@gmail.com",
+          "mode": "list",
+          "cachedResultName": "correo.test.automata@gmail.com"
+        },
+        "eventId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Event_ID', ``, 'string') }}",
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        440,
+        240
+      ],
+      "id": "7b71a112-734a-4f4a-a878-970b83e81278",
+      "name": "Google_modificar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "fzQgp6jSDCaREmb0",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        240
+      ],
+      "id": "07b7729a-3e3a-416d-9ac7-44d922ba218a",
+      "name": "ia_gem_asistente",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bkXmz9JdP2zyUVVM",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utiliza esta herramienta para enviar un mensaje a los correos de los usuarios cuando terminen de agendar una cita.\nel formato de los correos debe ser profesional y detallado.",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        240
+      ],
+      "id": "3d283437-b80c-40f5-9faf-8471e679c0fe",
+      "name": "correo_gmail",
+      "webhookId": "7197e3d8-9195-476a-ba48-69a239f77382",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8OaxeIVJ9z3A6xJq",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram_entrada": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram_salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google_crear": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google_eliminar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google_consulta": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram_salida": {
+      "main": [
+        []
+      ]
+    },
+    "Google_modificar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ia_gem_asistente": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "correo_gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "b5ba1b1e-7d97-4a60-a2a4-8431da1220c8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "74172f048f458dc887eabf155b199a17dde0aa0c3a861281cea8b65fc007251a"
+  },
+  "id": "jPsypqAs29vtp44K",
+  "tags": []
+}
